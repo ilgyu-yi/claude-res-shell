@@ -375,11 +375,16 @@ The invocation's permission set is selected by `mode` **at launch** (§3.2, §4.
 strategic launch carries **no** code-reading/repo tools — the no-code guarantee is
 **structural** (the capability is absent from the process, not merely discouraged at
 runtime); a technical launch carries them, scoped to the caller-authorized codebase. The
-current `.claude/settings.json` (web search/fetch + Bash file-ops + Write/Edit to the
-per-invocation workspace, and **no `Read`** — the code-reading tool is absent) is the
-**strategic baseline**; the **technical profile** adds scoped code-reading and is a Tier-2
+current `.claude/settings.json` (web search/fetch + Bash **name/metadata/file-management**
+ops — `ls`/`find`/`wc`/`stat`/`mkdir`/`mv`/`cp`, which list or move files but do **not**
+print their contents — + Write/Edit to the per-invocation workspace) is the **strategic
+baseline**. Every **content-reader** is absent — not just `Read`, but also `grep`/`rg` and
+`Glob`: §3.2 classifies "Read/Grep/Glob over a repo" as the disabled code-reading
+capability, so a strategic baseline that granted `Bash(grep)`/`Bash(rg)` (which print
+matching code lines, and under unrestricted args could target any path) would defeat the
+structural guarantee. The **technical profile** adds scoped code-reading and is a Tier-2
 deliverable (§10). Because the profile is fixed at launch, mode cannot be escalated mid-run
-(§3.3) — there is no code tool to reach for.
+(§3.3) — there is no code-reading tool to reach for.
 
 The strategic baseline's Write/Edit patterns (`*.md`, `notes/**`) are **workspace-relative**:
 the caller launches res with **cwd = the request's `output_location`** (§7.1), so the

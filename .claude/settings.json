@@ -5,8 +5,6 @@
       "Bash(ls:*)",
       "Bash(mkdir:*)",
       "Bash(find:*)",
-      "Bash(grep:*)",
-      "Bash(rg:*)",
       "Bash(wc:*)",
       "Bash(stat:*)",
       "Bash(mv:*)",
