@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(wc:*)",
+      "Bash(stat:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "WebFetch",
+      "WebSearch",
+      "Write(projects/**)",
+      "Write(inbox/**)",
+      "Edit(projects/**)",
+      "Edit(inbox/**)"
+    ]
+  }
+}
