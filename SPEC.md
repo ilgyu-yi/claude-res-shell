@@ -234,15 +234,40 @@ silently repair a malformed request:
 - The caller reads the document and exercises its own judgment (dir folds it into an
   Initiative as cited evidence per dir SPEC §6.3; eng uses it for code-level judgment).
 
-### 4.3 Invocation mechanism (design level)
+### 4.3 Invocation mechanism
 
-All local, no remotes. res is a component the caller invokes; the concrete mechanism
-(separate Claude Code session/subprocess with the request as its brief, vs. an in-process
-research subagent bundle) is a **Tier-2 implementation choice** and is recorded when built.
-At the design level the contract is what matters: request in (§4.1) → document at
-`output_location` (§4.2) → control returns to caller. The mode's tool-gating (§3.2) must
-hold whatever the mechanism; strategic invocations must be launched with code-reading
-capabilities absent (§7.3).
+res is invoked **by its caller (dir or eng)** — never by claude-orch-shell (research calls
+are stage-internal and invisible to the orchestrator; §6.3, dir SPEC §14 D11). All local,
+no remotes.
+
+**Mechanism — caller-spawned subprocess, mode-gated at launch.** The caller spawns res as a
+bounded subprocess (a `claude -p "<research brief>"` session, or a dedicated `res` entry),
+launched with the **permission profile selected by the request's `mode`** (§7.3):
+
+- `strategic` → launched with **no code-reading/repo tools present** (the `.claude/
+  settings.json` strategic baseline). The no-code guarantee (§2.2, §3.2, D4) is therefore
+  **structural at the process boundary** — res cannot read code because the capability is
+  absent from the launched process, not because it elects not to.
+- `technical` → the strategic baseline **plus** scoped code-reading over the codebase the
+  caller authorized (§7.3).
+
+**Synchronous — unlike the orchestrator's fire-and-forget transport.** The caller needs the
+document to proceed with *its own* judgment (dir folds it into an Initiative as evidence;
+eng uses it for a code-level call). So res invocation is a **blocking subroutine call**: the
+caller spawns res, res writes the document to `output_location`, and the caller reads it
+before continuing. This contrasts claude-orch-shell's transport (claude-orch-shell SPEC
+§5.2), which is fire-and-forget + metadata re-evaluation precisely because the orchestrator
+never consumes a stage's output inline — res's caller *does*.
+
+**Safety / sanction.** Same posture as claude-orch-shell SPEC §5.2.3: the launched res
+process **self-guards via its mode profile** (a strategic launch is safe by construction —
+no code tools), and autonomous launch needs the same kind of one-time user sanction
+authorizing the caller to spawn res. The mode profile is the guardrail; permission prompts
+are bypassed, capabilities are not.
+
+The contract is invariant under the mechanism: request in (§4.1) → document at
+`output_location` (§4.2) → control returns to caller, with mode tool-gating (§3.2/§7.3)
+holding **at the process boundary**.
 
 ---
 
@@ -346,11 +371,14 @@ code-free — verifiable after the fact (§10).
 
 ### 7.3 Tool gating by mode
 
-The invocation's permission set is selected by mode at launch (§3.2): strategic launches
-**without** code-reading/repo tools; technical launches with them, scoped to the authorized
-codebase. The current `.claude/settings.json` (web + file-ops over a research workspace) is
-the strategic baseline; the technical profile adds scoped code-reading and is a Tier-2
-deliverable. See §10.
+The invocation's permission set is selected by `mode` **at launch** (§3.2, §4.3): a
+strategic launch carries **no** code-reading/repo tools — the no-code guarantee is
+**structural** (the capability is absent from the process, not merely discouraged at
+runtime); a technical launch carries them, scoped to the caller-authorized codebase. The
+current `.claude/settings.json` (web + file-ops over a research workspace) is the
+**strategic baseline**; the **technical profile** adds scoped code-reading and is a Tier-2
+deliverable (§10). Because the profile is fixed at launch, mode cannot be escalated mid-run
+(§3.3) — there is no code tool to reach for.
 
 ---
 
@@ -395,14 +423,18 @@ Settled choices + rationale. **[brief]** marks premises inherited from the worki
 | D5 **[brief]** | **One invocation never mixes modes** (§3.3); a strategic call that hits a code-only question returns the limitation rather than escalating. | The brief requires single-mode invocations. Escalation would silently break dir's code-independence; surfacing the limitation keeps the boundary clean and hands the decision back to the caller. |
 | D6 **[brief]** | res is **invisible to claude-orch-shell** (§6.3); research calls are stage-internal. | claude-orch-shell is type-A metadata-only plumbing (dir SPEC §14 D11; claude-orch-shell SPEC); res calls are subroutines of dir/eng stages, not routed artifacts. |
 | D7 | Research-document **output language defaults to English** with an optional `language` request field. | The brief mandates English for this work; callers are English. The prior Korean-output convention is retained only as an opt-in (`language: ko`), not the default. |
-| D8 | **Invocation mechanism is a Tier-2 choice** (§4.3); the SPEC fixes the request/response **contract**, not the transport. | Lets the contract stabilize now (Tier 1) and claude-orch-shell spec depend on it, while the concrete launch mechanism is decided at implementation. |
+| D8 | The invocation **design** is now specified (§4.3): res is **caller-spawned** (dir/eng, never orch), as a **mode-gated subprocess**; the concrete wiring stays a Tier-2 implementation detail. | The request/response contract stabilized first; with claude-orch-shell's transport model settled, res's invocation is specified consistently (one tier down) rather than left fully open. |
+| D9 | res invocation is **synchronous** (a blocking subroutine call) and the mode tool-gating holds **at the process boundary** (§4.3, §7.3); same one-time-sanction posture as claude-orch-shell SPEC §5.2.3. | The caller consumes res's document inline (unlike the orchestrator's fire-and-forget transport), so it blocks. Structural-at-launch tool-gating makes the no-code guarantee (D4) impossible to violate at runtime, not merely discouraged. |
 
 ---
 
 ## 10. Open items
 
-- **Concrete invocation mechanism** (§4.3): separate session/subprocess vs in-process
-  subagent bundle. Decide at Tier 2; whichever is chosen must preserve mode tool-gating.
+- **Invocation mechanism** (§4.3): ✅ **design specified** — caller-spawned, mode-gated
+  subprocess, synchronous, structural tool-gating at the process boundary. Still open at
+  Tier 2: the concrete spawn wiring (`claude -p` brief vs a dedicated `res` entry) + the
+  one-time launch-sanction, mirroring claude-orch-shell SPEC §5.2.3. Whatever is chosen must
+  preserve mode tool-gating.
 - **Technical-mode permission profile** (§7.3): the scoped code-reading `settings.json`
   profile for technical invocations (the current settings are the strategic baseline).
 - **Strategic-mode verification check**: ✅ **implemented** (defense-in-depth) in
