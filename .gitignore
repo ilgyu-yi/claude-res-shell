@@ -1,0 +1,14 @@
+# 사내·개인 리서치 콘텐츠 — 셸 자체와 라이프사이클 분리
+# 필요 시 각 projects/<name>/ 안에서 별도 `git init` 또는 사내 저장소에 push
+projects/
+inbox/
+
+# Claude Code 개인 설정 (사용자별 permissions·env)
+.claude/settings.local.json
+
+# macOS
+.DS_Store
+
+# Python bytecode (validation/ Tier-2 unit)
+__pycache__/
+*.pyc
