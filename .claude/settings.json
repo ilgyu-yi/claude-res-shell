@@ -13,10 +13,10 @@
       "Bash(cp:*)",
       "WebFetch",
       "WebSearch",
-      "Write(projects/**)",
-      "Write(inbox/**)",
-      "Edit(projects/**)",
-      "Edit(inbox/**)"
+      "Write(*.md)",
+      "Write(notes/**)",
+      "Edit(*.md)",
+      "Edit(notes/**)"
     ]
   }
 }
