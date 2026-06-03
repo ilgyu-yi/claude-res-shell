@@ -15,6 +15,22 @@ its commitments in real research while staying code-independent, and it is enfor
 **absence** of code-reading tools in a strategic invocation, not by convention. See
 [SPEC.md](SPEC.md) §3.
 
+## Shared principle — context narrowing
+
+res shares the system's load-bearing principle (origin:
+[claude-eng-shell MISSION](https://github.com/ilgyu-yi/claude-eng-shell/blob/main/MISSION.md)
+"The mechanism"; system statement in claude-orch-shell MISSION): **output quality is bounded
+by the size and relevance of working context** — keep the active context small and relevant
+(narrowing + selective injection), with **artifacts, not conversations, as the durable
+memory**. Every research call is judged against it.
+
+res embodies it by returning a **document — a distilled verdict, not a transcript** (one per
+call), by **mode-gating its context surface** (a strategic invocation carries *no code tools
+at all*, so the code context is structurally absent), and by going **broad→narrow** (survey
+the landscape before deep-reading). Each call is a **bounded, single-mode subroutine**, not
+an accumulating session — which is exactly why the prior long-running multi-project framing
+was dropped (SPEC §9 D2).
+
 ## What it does
 
 - **Answers a research question** with a bounded, effort-scaled investigation (broad→narrow).
